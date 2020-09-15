@@ -44,7 +44,7 @@ func main() {
 	)
 	flag.StringVar(&packageName, "package", "", "The package name for generated code")
 	flag.StringVar(&generate, "generate", "types,client,server,spec",
-		`Comma-separated list of code to generate; valid options: "types", "client", "chi-server", "server", "spec", "skip-fmt", "skip-prune"`)
+		`Comma-separated list of code to generate; valid options: "types", "client", "apigw", "chi-server", "server", "spec", "skip-fmt", "skip-prune"`)
 	flag.StringVar(&outputFile, "o", "", "Where to output generated code, stdout is default")
 	flag.StringVar(&includeTags, "include-tags", "", "Only include operations with the given tags. Comma-separated list of tags.")
 	flag.StringVar(&excludeTags, "exclude-tags", "", "Exclude operations that are tagged with the given tags. Comma-separated list of tags.")
@@ -77,6 +77,8 @@ func main() {
 			opts.GenerateChiServer = true
 		case "server":
 			opts.GenerateEchoServer = true
+		case "apigw":
+			opts.GenerateAPIGWServer = true
 		case "types":
 			opts.GenerateTypes = true
 		case "spec":
@@ -98,6 +100,12 @@ func main() {
 
 	if opts.GenerateEchoServer && opts.GenerateChiServer {
 		errExit("can not specify both server and chi-server targets simultaneously")
+	}
+
+	if (opts.GenerateEchoServer && opts.GenerateChiServer) ||
+		(opts.GenerateAPIGWServer && opts.GenerateChiServer) ||
+		(opts.GenerateEchoServer && opts.GenerateAPIGWServer) {
+		errExit("can not specify multiple types - server, chi-server or apigw targets simultaneously")
 	}
 
 	swagger, err := util.LoadSwagger(flag.Arg(0))

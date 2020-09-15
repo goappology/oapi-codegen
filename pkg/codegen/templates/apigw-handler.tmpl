@@ -1,0 +1,9 @@
+// HandlerFromMux creates http.Handler with routing matching OpenAPI spec based on the provided mux.
+func RegisterHandlers(si ServerInterface, r *musa.Musa) {
+{{if .}}wrapper := ServerInterfaceWrapper{
+        Handler: si,
+    }
+{{end}}
+{{range .}}r.{{.Method | title }}("{{.Path | swaggerUriToChiUri}}", wrapper.{{.OperationId}})
+{{end}}
+}

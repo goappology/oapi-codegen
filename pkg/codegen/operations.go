@@ -699,6 +699,35 @@ func GenerateEchoServer(t *template.Template, operations []OperationDefinition) 
 	return strings.Join([]string{si, wrappers, register}, "\n"), nil
 }
 
+// GenerateAPIGWServer This function generates all the go code for the ServerInterface as well as
+// all the wrapper functions around our handlers.
+func GenerateAPIGWServer(t *template.Template, operations []OperationDefinition) (string, error) {
+	var buf bytes.Buffer
+	w := bufio.NewWriter(&buf)
+
+	err := t.ExecuteTemplate(w, "apigw-interface.tmpl", operations)
+	if err != nil {
+		return "", errors.Wrap(err, "error generating server interface")
+	}
+
+	err = t.ExecuteTemplate(w, "apigw-wrappers.tmpl", operations)
+	if err != nil {
+		return "", errors.Wrap(err, "error generating server middleware")
+	}
+
+	err = t.ExecuteTemplate(w, "apigw-handler.tmpl", operations)
+	if err != nil {
+		return "", errors.Wrap(err, "error generating server http handler")
+	}
+
+	err = w.Flush()
+	if err != nil {
+		return "", errors.Wrap(err, "error flushing output buffer for server")
+	}
+
+	return buf.String(), nil
+}
+
 // Uses the template engine to generate the server interface
 func GenerateServerInterface(t *template.Template, ops []OperationDefinition) (string, error) {
 	var buf bytes.Buffer
